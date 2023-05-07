@@ -1,16 +1,19 @@
 //jshint esversion:6
 require('dotenv').config();
+
 const express = require("express");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
 const mongoose = require("mongoose");
-const session = require('express-session');
+const session = require('cookie-session');
 const passport = require("passport");
 const passportLocalMongoose = require("passport-local-mongoose");
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const findOrCreate = require('mongoose-findorcreate');
-
 const app = express();
+const multer = require('multer');
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage }).single('resume');
 
 app.use(express.static("public"));
 app.set('view engine', 'ejs');
@@ -19,7 +22,7 @@ app.use(bodyParser.urlencoded({
 }));
 
 app.use(session({
-  secret: "Our little secret.",
+  secret: "think.",
   resave: false,
   saveUninitialized: false
 }));
@@ -27,14 +30,18 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-mongoose.connect("mongodb://localhost:27017/userDB", {useNewUrlParser: true});
+mongoose.connect(`mongodb+srv://security:malai@cluster0.7h0rl9g.mongodb.net/internship?retryWrites=true&w=majority`, {useNewUrlParser: true , useUnifiedTopology: true });
 mongoose.set("useCreateIndex", true);
 
 const userSchema = new mongoose.Schema ({
   email: String,
   password: String,
   googleId: String,
-  secret: String
+  secret: String ,
+  file: {
+    data: Buffer,
+    contentType: String
+  }
 });
 
 userSchema.plugin(passportLocalMongoose);
@@ -71,6 +78,9 @@ passport.use(new GoogleStrategy({
 
 app.get("/", function(req, res){
   res.render("home");
+});
+app.get("/completed", function(req, res){
+  res.render("completed");
 });
 
 app.get("/auth/google",
@@ -112,10 +122,18 @@ app.get("/submit", function(req, res){
   }
 });
 
-app.post("/submit", function(req, res){
-  const submittedSecret = req.body.secret;
+
 
 //Once the user is authenticated and their session gets saved, their user details are saved to req.user.
+  // console.log(req.user.id);
+
+
+
+app.post("/submit", upload, function(req, res){
+  const submittedSecret = req.body.secret;
+  const submittedResume = req.file.buffer;
+
+  //Once the user is authenticated and their session gets saved, their user details are saved to req.user.
   // console.log(req.user.id);
 
   User.findById(req.user.id, function(err, foundUser){
@@ -124,13 +142,24 @@ app.post("/submit", function(req, res){
     } else {
       if (foundUser) {
         foundUser.secret = submittedSecret;
+        foundUser.resume = submittedResume;
         foundUser.save(function(){
-          res.redirect("/secrets");
+          res.redirect("/completed");
         });
       }
     }
   });
 });
+
+
+
+
+
+
+
+
+
+
 
 app.get("/logout", function(req, res){
   req.logout();

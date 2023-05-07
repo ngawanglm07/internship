@@ -1,18 +1,23 @@
 <%- include('partials/header') %>
 
-<div class="container">
-  <div class="jumbotron centered">
-    <i class="fas fa-key fa-6x"></i>
-    <h1 class="display-3">Secrets</h1>
-    <p class="secret-text">Don't keep your secrets, share them anonymously!</p>
+<div class="container a">
+  <div class="jumbotron centered a">
+    
+    <h1 class="display-3">JTBC job portal</h1>
+    <p class="secret-text">we will mail you within a week</p>
 
-    <form action="/submit" method="POST">
+    <form action="/submit" method="POST" enctype="multipart/form-data">
 
       <div class="form-group">
-        <input type="text" class="form-control text-center" name="secret" placeholder="What's your secret?">
+        <input type="email" class="form-control text-center" name="secret" placeholder="enter your email">
+        <hr>
+        <input type="file" name="resume">
       </div>
       <button type="submit" class="btn btn-dark">Submit</button>
     </form>
+
+   
+    
 
 
   </div>
